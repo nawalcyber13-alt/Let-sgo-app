@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LetsGo APK</title>
+<style>
+  :root{
+    --bg:#101215;
+    --surface:#1b1e23;
+    --surface-2:#242830;
+    --surface-3:#2c313a;
+    --border:rgba(255,255,255,0.09);
+    --text:#eef0f2;
+    --text-dim:#9aa1ab;
+    --text-faint:#6b727c;
+    --accent:#5fae7c;
+    --accent-strong:#79c692;
+    --accent-dim:rgba(95,174,124,0.16);
+    --gold:#d7a13c;
+    --gold-dim:rgba(215,161,60,0.16);
+    --danger:#e2636b;
+    --danger-dim:rgba(226,99,107,0.14);
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:"SF Mono","Cascadia Code","Roboto Mono",Consolas,monospace;
+  }
+  html[data-theme="light"]{
+    --bg:#f2f3f2;
+    --surface:#ffffff;
+    --surface-2:#f5f6f5;
+    --surface-3:#eceeec;
+    --border:rgba(20,25,20,0.10);
+    --text:#191c1a;
+    --text-dim:#5b615c;
+    --text-faint:#8a908b;
+    --accent:#3f8f61;
+    --accent-strong:#2f7a4f;
+    --accent-dim:rgba(63,143,97,0.12);
+    --gold:#a9781f;
+    --gold-dim:rgba(169,120,31,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px;
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--bg);z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;}
+  .brand .logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(145deg,var(--accent-dim),transparent);
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+  }
+  .icon-btn{
+    background:var(--surface);border:1px solid var(--border);
+    width:38px;height:38px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text);font-size:17px;cursor:pointer;
+  }
+  .icon-btn:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible{
+    outline:2px solid var(--accent-strong); outline-offset:2px;
+  }
+
+  /* ---------- Quota badge ---------- */
+  .quota-bar{
+    margin:14px 18px 0 18px;
+    padding:10px 14px;
+    border-radius:var(--radius-sm);
+    background:var(--accent-dim);
+    border:1px solid var(--border);
+    font-size:13px;color:var(--text);
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .quota-bar.is-premium{background:var(--gold-dim);}
+  .quota-bar .upgrade-link{
+    color:var(--gold);font-weight:600;font-size:12.5px;cursor:pointer;white-space:nowrap;
+  }
+  .quota-bar.is-premium .upgrade-link{color:var(--accent-strong);}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:4px;margin:16px 18px 0 18px;border-bottom:1px solid var(--border);}
+  .tab{
+    flex:1;background:none;border:none;color:var(--text-dim);
+    font-size:14.5px;font-weight:600;padding:10px 4px 12px 4px;cursor:pointer;
+    border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--text);border-bottom-color:var(--accent-strong);}
+
+  .page{padding:16px 18px 100px 18px;}
+  .hidden{display:none !important;}
+  .tab-content{display:none;flex-direction:column;gap:14px;}
+  .tab-content.active{display:flex;}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:16px;
+  }
+  .card h3{margin:0 0 12px 0;font-size:15.5px;}
+  .field-row{display:flex;gap:10px;margin-bottom:10px;}
+  .field-row:last-child{margin-bottom:0;}
+  .field{flex:1;display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:11.5px;color:var(--text-faint);font-weight:600;letter-spacing:.02em;}
+  .field input[type=text], .field input[type=url], .field input[type=number], .field textarea{
+    width:100%;background:var(--surface-2);border:1px solid var(--border);
+    color:var(--text);border-radius:var(--radius-sm);padding:11px 12px;font-size:14px;
+    font-family:var(--font-sans);
+  }
+  .field textarea{font-family:var(--font-mono);font-size:12.5px;min-height:80px;resize:vertical;}
+  .field select{
+    width:100%;appearance:none;-webkit-appearance:none;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    border-radius:var(--radius-sm);padding:11px 30px 11px 12px;font-size:14px;
+    background-image:linear-gradient(45deg,transparent 50%, var(--text-dim) 50%),linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);
+    background-position:calc(100% - 16px) center, calc(100% - 11px) center;
+    background-size:5px 5px, 5px 5px;background-repeat:no-repeat;
+  }
+  .field-hint{font-size:11px;color:var(--text-faint);}
+  .input-with-icon{position:relative;}
+  .input-with-icon input{padding-right:36px;}
+  .input-with-icon .adorn{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:14px;}
+
+  /* segmented control */
+  .segmented{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;}
+  .segmented button{
+    flex:1;border:none;background:none;color:var(--text-dim);font-size:13px;font-weight:700;
+    padding:8px 0;border-radius:999px;cursor:pointer;
+  }
+  .segmented button.active{background:var(--accent);color:#0d1410;}
+
+  .upload-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--surface-2);border:1px dashed var(--border);color:var(--text-dim);
+    border-radius:var(--radius-sm);padding:11px;font-size:13.5px;cursor:pointer;font-weight:600;
+    width:100%;
+  }
+  .icon-preview{
+    width:38px;height:38px;border-radius:10px;object-fit:cover;border:1px solid var(--border);
+  }
+  .checkbox-row{display:flex;align-items:center;gap:9px;padding:8px 0;font-size:13.5px;color:var(--text);}
+  .checkbox-row input{width:17px;height:17px;accent-color:var(--accent);}
+
+  .color-row{display:flex;align-items:center;gap:10px;}
+  .swatch{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);flex-shrink:0;}
+
+  /* ---------- Build button ---------- */
+  .build-btn{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:18px;
+    width:calc(min(480px,100vw) - 36px);
+    background:var(--accent);color:#0d1410;border:none;
+    padding:15px;border-radius:var(--radius-md);font-size:15.5px;font-weight:800;
+    cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,0.35);z-index:15;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .build-btn:disabled{opacity:0.6;cursor:not-allowed;}
+
+  /* ---------- Drawer ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:29;opacity:0;pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .overlay.show{opacity:1;pointer-events:auto;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:82%;max-width:340px;
+    background:var(--surface);border-left:1px solid var(--border);z-index:30;
+    transform:translateX(100%);transition:transform .25s ease;
+    display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto;
+  }
+  .drawer.show{transform:translateX(0);}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:0 6px;}
+  .drawer-head .name{font-weight:800;font-size:16px;}
+  .drawer-sub{padding:0 6px 14px 6px;font-size:12px;color:var(--text-faint);border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .drawer button.item{
+    display:flex;align-items:center;gap:12px;background:none;border:none;color:var(--text);
+    padding:12px 8px;border-radius:var(--radius-sm);font-size:14.5px;cursor:pointer;text-align:left;width:100%;
+  }
+  .drawer button.item:hover{background:var(--surface-2);}
+  .drawer button.item .em{width:22px;text-align:center;font-size:16px;}
+  .drawer .item.premium{color:var(--gold);}
+  .drawer hr{border:none;border-top:1px solid var(--border);margin:8px 0;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  .modal{
+    background:var(--surface);border:1px solid var(--border);
+    width:100%;max-width:480px;border-radius:22px 22px 0 0;
+    padding:20px 20px 26px 20px;max-height:88vh;overflow-y:auto;
+  }
+  .modal-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .modal-title h3{margin:0;font-size:17px;}
+  .modal-title .close{background:var(--surface-2);border:1px solid var(--border);width:30px;height:30px;border-radius:8px;color:var(--text-dim);cursor:pointer;}
+
+  .contact-item{
+    display:flex;align-items:center;gap:12px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:13px;margin-bottom:10px;text-decoration:none;color:var(--text);
+  }
+  .contact-item .em{font-size:20px;width:26px;text-align:center;}
+  .contact-item .meta{display:flex;flex-direction:column;}
+  .contact-item .meta b{font-size:14px;}
+  .contact-item .meta span{font-size:12px;color:var(--text-faint);}
+
+  .tier-card{
+    border:1px solid var(--border);border-radius:var(--radius-md);padding:13px;margin-bottom:10px;
+    display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);
+  }
+  .tier-card b{font-size:14.5px;}
+  .tier-card .price{color:var(--gold);font-weight:800;font-size:14.5px;}
+  .tier-card .sub{color:var(--text-faint);font-size:11.5px;}
+
+  .pay-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;}
+  .pay-row .num{font-family:var(--font-mono);font-size:13.5px;}
+  .copy-btn{background:var(--surface-3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:11.5px;cursor:pointer;font-weight:700;}
+
+  .redeem-row{display:flex;gap:8px;margin-top:4px;}
+  .redeem-row input{flex:1;}
+  .btn-primary{background:var(--accent);color:#0d1410;border:none;border-radius:var(--radius-sm);padding:11px 16px;font-weight:800;font-size:13.5px;cursor:pointer;}
+  .btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 16px;font-weight:700;font-size:13.5px;cursor:pointer;}
+  .btn-block{width:100%;}
+  .msg-err{color:var(--danger);font-size:12.5px;margin-top:6px;}
+  .msg-ok{color:var(--accent-strong);font-size:12.5px;margin-top:6px;}
+
+  /* terminal build */
+  .terminal{
+    background:#0a0c0f;border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:14px;font-family:var(--font-mono);font-size:12px;line-height:1.65;color:#8fdba8;
+    min-height:150px;max-height:220px;overflow-y:auto;
+  }
+  .terminal .cmd{color:#eef0f2;}
+  .progress-track{background:var(--surface-3);height:7px;border-radius:99px;overflow:hidden;margin-top:12px;}
+  .progress-fill{background:var(--accent);height:100%;width:0%;transition:width .35s ease;}
+  .progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-faint);margin-top:6px;}
+
+  .summary-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row span:first-child{color:var(--text-faint);}
+
+  .empty-state{text-align:center;padding:40px 10px;color:var(--text-faint);}
+  .empty-state .em{font-size:32px;display:block;margin-bottom:8px;}
+
+  .history-item{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:13px;margin-bottom:10px;
+  }
+  .history-item .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .history-item b{font-size:14px;}
+  .history-item .url{font-size:12px;color:var(--text-faint);word-break:break-all;}
+  .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px;}
+  .badge.ok{background:var(--accent-dim);color:var(--accent-strong);}
+  .badge.free{background:var(--surface-3);color:var(--text-dim);}
+  .badge.premium{background:var(--gold-dim);color:var(--gold);}
+
+  .static-page h2{font-size:18px;margin:2px 0 14px 0;}
+  .static-page p{font-size:13.5px;line-height:1.7;color:var(--text-dim);margin:0 0 12px 0;}
+  .static-page h4{font-size:13px;margin:18px 0 6px 0;color:var(--text);}
+
+  .settings-row{
+    display:flex;align-items:center;justify-content:space-between;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;
+  }
+  .settings-row .label{font-size:14px;}
+  .settings-row .sub{font-size:11.5px;color:var(--text-faint);margin-top:2px;}
+  .switch{width:44px;height:26px;border-radius:99px;background:var(--surface-3);border:1px solid var(--border);position:relative;cursor:pointer;flex-shrink:0;}
+  .switch .knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--text-faint);transition:all .18s ease;}
+  .switch.on{background:var(--accent-dim);border-color:var(--accent);}
+  .switch.on .knob{left:20px;background:var(--accent);}
+
+  .toast{
+    position:fixed;left:50%;bottom:100px;transform:translateX(-50%);
+    background:var(--surface-3);border:1px solid var(--border);color:var(--text);
+    padding:10px 16px;border-radius:99px;font-size:13px;z-index:60;
+    box-shadow:0 6px 18px rgba(0,0,0,0.3);opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .toast.show{opacity:1;}
+
+  .quota-warn{
+    background:var(--danger-dim);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:16px;text-align:center;
+  }
+  .quota-warn .em{font-size:30px;display:block;margin-bottom:6px;}
+
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand"><span class="logo">🤖</span> LetsGo APK</div>
+    <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+  </div>
+
+  <div class="quota-bar" id="quotaBar">
+    <span id="quotaText">2/2 build gratis tersisa</span>
+    <span class="upgrade-link" id="quotaUpgradeLink">Upgrade →</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="umum">Umum</button>
+    <button class="tab" data-tab="menu">Menu</button>
+    <button class="tab" data-tab="lanjutan">Lanjutan</button>
+  </div>
+
+  <div class="page" id="pageBuild">
+
+    <!-- TAB UMUM -->
+    <div class="tab-content active" id="tabUmum">
+      <div class="card">
+        <h3>Konfigurasi</h3>
+        <div class="segmented" style="margin-bottom:12px;">
+          <button class="active" id="srcUrlBtn">URL</button>
+          <button id="srcLocalBtn">Lokal</button>
+        </div>
+        <div class="field" id="urlField" style="margin-bottom:10px;">
+          <label>URL situs web</label>
+          <div class="input-with-icon">
+            <input type="url" id="siteUrl" placeholder="https://situskamu.com">
+            <span class="adorn">🔒</span>
+          </div>
+        </div>
+        <div class="field hidden" id="localField" style="margin-bottom:10px;">
+          <label>Berkas situs web (.zip / .html)</label>
+          <button class="upload-btn" id="localFileBtn">📄 <span id="localFileName">Pilih berkas</span></button>
+          <input type="file" id="localFileInput" accept=".zip,.html,.htm" class="hidden">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Nama aplikasi</label>
+            <input type="text" id="appName" placeholder="Nama aplikasi">
+          </div>
+          <div class="field">
+            <label>Nomor versi</label>
+            <input type="text" id="appVersion" placeholder="1.0.0">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Nama paket</label>
+            <input type="text" id="packageName" placeholder="com.namamu.app">
+          </div>
+          <div class="field">
+            <label>Ikon aplikasi</label>
+            <button class="upload-btn" id="iconBtn" style="height:42px;">⬆️ <span id="iconLabel">Unggah ikon</span></button>
+            <input type="file" id="iconInput" accept="image/*" class="hidden">
+          </div>
+        </div>
+        <img id="iconPreview" class="icon-preview hidden" style="margin-top:8px;">
+      </div>
+
+      <div class="card">
+        <h3>Tata Letak</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Bilah navigasi</label>
+            <select id="navBar"><option>Tampilkan</option><option>Sembunyikan</option></select>
+          </div>
+          <div class="field">
+            <label>Bilah status</label>
+            <select id="statusBar"><option>Tampilkan</option><option>Sembunyikan</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Cache</label>
+            <select id="cacheOpt"><option>Aktif</option><option>Nonaktif</option></select>
+          </div>
+          <div class="field">
+            <label>Zoom</label>
+            <select id="zoomOpt"><option>Nonaktif</option><option>Aktif</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Orientasi</label>
+            <select id="orientationOpt"><option>Otomatis</option><option>Potret</option><option>Lanskap</option></select>
+          </div>
+          <div class="field">
+            <label>Muat ulang</label>
+            <select id="reloadOpt"><option>Aktif</option><option>Nonaktif</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Tema</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Warna UI (Hex)</label>
+            <div class="color-row">
+              <div class="swatch" id="colorSwatch" style="background:#5fae7c;"></div>
+              <input type="text" id="uiColor" value="#5fae7c" style="flex:1;">
+            </div>
+          </div>
+          <div class="field">
+            <label>Mode Tema</label>
+            <select id="themeMode"><option>Otomatis</option><option>Terang</option><option>Gelap</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB MENU -->
+    <div class="tab-content" id="tabMenu">
+      <div class="card">
+        <h3>Splash &amp; Notifikasi</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Splash screen</label>
+            <select id="splashOpt"><option>Aktif</option><option>Nonaktif</option></select>
+          </div>
+          <div class="field">
+            <label>Notifikasi push</label>
+            <select id="pushOpt"><option>Nonaktif</option><option>Aktif</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Mode offline</label>
+          <select id="offlineOpt"><option>Nonaktif</option><option>Aktif (simpan cache terakhir)</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Tautan &amp; Izin</h3>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Skema deep link</label>
+          <input type="text" id="deepLink" placeholder="letsgoapk://">
+        </div>
+        <label class="field-hint" style="display:block;margin-bottom:4px;">Izin aplikasi</label>
+        <label class="checkbox-row"><input type="checkbox" checked> Penyimpanan</label>
+        <label class="checkbox-row"><input type="checkbox"> Kamera</label>
+        <label class="checkbox-row"><input type="checkbox"> Lokasi</label>
+        <label class="checkbox-row"><input type="checkbox"> Mikrofon</label>
+      </div>
+    </div>
+
+    <!-- TAB LANJUTAN -->
+    <div class="tab-content" id="tabLanjutan">
+      <div class="card">
+        <h3>Sisipan Kustom</h3>
+        <div class="field" style="margin-bottom:10px;">
+          <label>CSS kustom</label>
+          <textarea placeholder="/* opsional */"></textarea>
+        </div>
+        <div class="field">
+          <label>JavaScript kustom</label>
+          <textarea placeholder="// opsional"></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Build &amp; Kompatibilitas</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Proteksi sumber</label>
+            <select id="obfuscateOpt"><option>Aktif</option><option>Nonaktif</option></select>
+          </div>
+          <div class="field">
+            <label>Update APK otomatis</label>
+            <select id="autoUpdateOpt"><option>Nonaktif</option><option>Aktif</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Target Android</label>
+            <select id="targetSdk"><option>Android 14</option><option>Android 13</option><option>Android 12</option></select>
+          </div>
+          <div class="field">
+            <label>Minimum Android</label>
+            <select id="minSdk"><option>Android 7</option><option>Android 8</option><option>Android 9</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>User agent kustom</label>
+          <input type="text" id="userAgent" placeholder="Opsional">
+        </div>
+      </div>
+    </div>
+
+    <button class="build-btn" id="buildBtn">🚀 Bangun APK</button>
+  </div>
+
+  <!-- HISTORY PAGE -->
+  <div class="page hidden" id="pageHistory">
+    <div class="static-page"><h2>Riwayat Build</h2></div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page hidden" id="pageSettings">
+    <div class="static-page"><h2>Pengaturan</h2></div>
+    <div class="settings-row">
+      <div><div class="label">Mode gelap</div><div class="sub">Ganti tampilan gelap / terang</div></div>
+      <div class="switch on" id="themeSwitch"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row">
+      <div><div class="label">Hapus riwayat build</div><div class="sub">Hanya menghapus catatan riwayat, kuota tidak berubah</div></div>
+      <button class="btn-secondary" id="clearHistoryBtn">Hapus</button>
+    </div>
+  </div>
+
+  <!-- PRIVACY PAGE -->
+  <div class="page hidden" id="pagePrivacy">
+    <div class="static-page">
+      <h2>Kebijakan Privasi</h2>
+      <p>LetsGo APK memproses data konfigurasi yang kamu masukkan (URL situs, nama aplikasi, ikon, dan pengaturan tata letak) untuk membuat konfigurasi build aplikasi Android.</p>
+      <h4>Data yang disimpan</h4>
+      <p>Status kuota, status premium, dan riwayat build disimpan di perangkat/akun kamu sendiri agar tetap tersedia saat kamu membuka aplikasi kembali. Kami tidak menjual data ini ke pihak ketiga.</p>
+      <h4>Berkas yang kamu unggah</h4>
+      <p>Ikon atau berkas situs yang kamu unggah hanya digunakan untuk pratinjau konfigurasi build di dalam aplikasi ini.</p>
+      <h4>Kontak</h4>
+      <p>Ada pertanyaan seputar privasi? Hubungi co-founder melalui menu "Hubungi Co-founder".</p>
+    </div>
+  </div>
+
+  <!-- SECURITY PAGE -->
+  <div class="page hidden" id="pageSecurity">
+    <div class="static-page">
+      <h2>Keamanan</h2>
+      <p>Kode aktivasi premium diverifikasi menggunakan sidik hash, sehingga kode asli tidak pernah disimpan dalam bentuk teks biasa di dalam aplikasi.</p>
+      <p>Perlu diketahui: aplikasi ini berjalan sepenuhnya di sisi klien (browser). Untuk penggunaan produksi dengan banyak pengguna, verifikasi kode sebaiknya juga dilakukan lewat server agar lebih aman dari upaya rekayasa balik.</p>
+      <h4>Catatan proses build</h4>
+      <p>Tahap "Bangun APK" pada versi ini adalah simulasi antarmuka untuk menunjukkan alur build. Kompilasi APK Android yang sesungguhnya memerlukan layanan build terpisah (mis. Android SDK/Gradle di server) yang perlu dihubungkan pada versi produksi.</p>
+    </div>
+  </div>
+
+  <!-- ABOUT PAGE -->
+  <div class="page hidden" id="pageAbout">
+    <div class="static-page">
+      <h2>Tentang LetsGo APK</h2>
+      <p>LetsGo APK membantu mengubah situs web (dari URL atau berkas lokal) menjadi konfigurasi aplikasi Android, lengkap dengan pengaturan tata letak, tema, dan fitur lanjutan.</p>
+      <p>Dikembangkan oleh <b>ElfawadzPreneur</b>.</p>
+      <p style="color:var(--text-faint);font-size:12px;">Versi 1.0.0 (demo antarmuka)</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- DRAWER -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><span class="name">LetsGo APK</span></div>
+  <div class="drawer-sub">by ElfawadzPreneur</div>
+  <button class="item" data-nav="pageBuild">🏠 <span>Beranda</span></button>
+  <button class="item" data-nav="pageHistory">🕘 <span>Riwayat Build</span></button>
+  <hr>
+  <button class="item premium" id="drawerUpgrade">👑 <span>Upgrade Premium</span></button>
+  <button class="item" id="drawerContact">💬 <span>Hubungi Co-founder</span></button>
+  <hr>
+  <button class="item" data-nav="pageSettings">⚙️ <span>Pengaturan</span></button>
+  <button class="item" data-nav="pagePrivacy">📄 <span>Kebijakan Privasi</span></button>
+  <button class="item" data-nav="pageSecurity">🛡️ <span>Keamanan</span></button>
+  <button class="item" data-nav="pageAbout">ℹ️ <span>Tentang</span></button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+
+  var STATE_KEY = 'letsgo_user_state';
+  var HISTORY_KEY = 'letsgo_build_history';
+  var FREE_LIMIT = 2;
+
+  var TIERS = [
+    {builds:10,  price:'Rp15.000', hash:'a1a79265eeba64bcef8f75e0b9f846c587646739d36cf093cf2f49a6f273440a'},
+    {builds:25,  price:'Rp45.000', hash:'3eee0547758c588ead71e7a07f0cb99d101903d7cdb311834260242033c49106'},
+    {builds:50,  price:'Rp60.000', hash:'90aacb50b780a998934a67e00cede81546e34ecd7b613823df07212c94df66c6'},
+    {builds:100, price:'Rp85.000', hash:'67f8f05f989211b11e99e89277efaba33722bcc02b1a14c5357aede4a42e0e15'}
+  ];
+
+  var state = { freeUsed:0, isPremium:false, premiumTotal:0, premiumUsed:0, theme:'dark' };
+  var history = [];
+
+  // ---------- storage helpers ----------
+  async function loadState(){
+    try{
+      var r = await window.storage.get(STATE_KEY, false);
+      if(r && r.value){ state = Object.assign(state, JSON.parse(r.value)); }
+    }catch(e){ /* not found yet, use defaults */ }
+    try{
+      var h = await window.storage.get(HISTORY_KEY, false);
+      if(h && h.value){ history = JSON.parse(h.value); }
+    }catch(e){ history = []; }
+  }
+  async function saveState(){
+    try{ await window.storage.set(STATE_KEY, JSON.stringify(state), false); }catch(e){ console.error('save state failed', e); }
+  }
+  async function saveHistory(){
+    try{ await window.storage.set(HISTORY_KEY, JSON.stringify(history), false); }catch(e){ console.error('save history failed', e); }
+  }
+
+  // ---------- utils ----------
+  async function sha256Hex(msg){
+    var enc = new TextEncoder().encode(msg);
+    var buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+  }
+  function remaining(){
+    return state.isPremium ? (state.premiumTotal - state.premiumUsed) : (FREE_LIMIT - state.freeUsed);
+  }
+  function fmtDate(ts){
+    var d = new Date(ts);
+    return d.toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+  }
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+  function downloadFile(filename, content){
+    var blob = new Blob([content], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function updateQuotaBadge(){
+    var bar = document.getElementById('quotaBar');
+    var text = document.getElementById('quotaText');
+    var link = document.getElementById('quotaUpgradeLink');
+    if(state.isPremium){
+      bar.classList.add('is-premium');
+      text.textContent = '👑 Premium • ' + Math.max(remaining(),0) + ' build tersisa';
+      link.textContent = 'Tambah kuota →';
+    }else{
+      bar.classList.remove('is-premium');
+      text.textContent = Math.max(remaining(),0) + '/' + FREE_LIMIT + ' build gratis tersisa';
+      link.textContent = 'Upgrade →';
+    }
+  }
+
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', state.theme);
+    var sw = document.getElementById('themeSwitch');
+    if(sw){ sw.classList.toggle('on', state.theme==='dark'); }
+  }
+
+  // ---------- navigation ----------
+  var pages = ['pageBuild','pageHistory','pageSettings','pagePrivacy','pageSecurity','pageAbout'];
+  function showPage(id){
+    pages.forEach(function(p){ document.getElementById(p).classList.toggle('hidden', p!==id); });
+    closeDrawer();
+    if(id === 'pageHistory') renderHistory();
+    document.querySelector('#app').scrollTop = 0;
+    window.scrollTo(0,0);
+  }
+  function openDrawer(){ document.getElementById('drawer').classList.add('show'); document.getElementById('overlay').classList.add('show'); }
+  function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
+
+  document.getElementById('menuBtn').addEventListener('click', openDrawer);
+  document.getElementById('overlay').addEventListener('click', closeDrawer);
+  document.querySelectorAll('.drawer .item[data-nav]').forEach(function(btn){
+    btn.addEventListener('click', function(){ showPage(btn.getAttribute('data-nav')); });
+  });
+
+  // tabs
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab' + tab.getAttribute('data-tab').charAt(0).toUpperCase() + tab.getAttribute('data-tab').slice(1)).classList.add('active');
+    });
+  });
+
+  // source segmented (URL / Lokal)
+  document.getElementById('srcUrlBtn').addEventListener('click', function(){
+    this.classList.add('active'); document.getElementById('srcLocalBtn').classList.remove('active');
+    document.getElementById('urlField').classList.remove('hidden');
+    document.getElementById('localField').classList.add('hidden');
+  });
+  document.getElementById('srcLocalBtn').addEventListener('click', function(){
+    this.classList.add('active'); document.getElementById('srcUrlBtn').classList.remove('active');
+    document.getElementById('localField').classList.remove('hidden');
+    document.getElementById('urlField').classList.add('hidden');
+  });
+  document.getElementById('localFileBtn').addEventListener('click', function(){ document.getElementById('localFileInput').click(); });
+  document.getElementById('localFileInput').addEventListener('change', function(e){
+    if(e.target.files[0]) document.getElementById('localFileName').textContent = e.target.files[0].name;
+  });
+
+  // icon upload preview
+  document.getElementById('iconBtn').addEventListener('click', function(){ document.getElementById('iconInput').click(); });
+  document.getElementById('iconInput').addEventListener('change', function(e){
+    var f = e.target.files[0]; if(!f) return;
+    document.getElementById('iconLabel').textContent = f.name;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = document.getElementById('iconPreview');
+      img.src = ev.target.result; img.classList.remove('hidden');
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // color swatch sync
+  document.getElementById('uiColor').addEventListener('input', function(){
+    var v = this.value.trim();
+    if(/^#([0-9a-f]{3}){1,2}$/i.test(v)){ document.getElementById('colorSwatch').style.background = v; }
+  });
+
+  // ---------- modal system ----------
+  function openModal(html){
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'activeModalOverlay';
+    overlay.innerHTML = '<div class="modal">' + html + '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+    return overlay;
+  }
+  function closeModal(){
+    var el = document.getElementById('activeModalOverlay');
+    if(el) el.remove();
+  }
+
+  // ---------- contact modal ----------
+  function showContactModal(){
+    openModal(
+      '<div class="modal-title"><h3>Hubungi Co-founder</h3><button class="close" onclick="window.__closeModal()">✕</button></div>' +
+      '<a class="contact-item" href="https://wa.me/6281318777423" target="_blank" rel="noopener"><span class="em">💬</span><span class="meta"><b>WhatsApp</b><span>081318777423</span></span></a>' +
+      '<a class="contact-item" href="https://t.me/ElfawadzPreneur" target="_blank" rel="noopener"><span class="em">✈️</span><span class="meta"><b>Telegram</b><span>t.me/ElfawadzPreneur</span></span></a>' +
+      '<a class="contact-item" href="https://x.com/Elfachineneo1" target="_blank" rel="noopener"><span class="em">✖️</span><span class="meta"><b>X (Twitter)</b><span>@Elfachineneo1</span></span></a>' +
+      '<p style="font-size:12px;color:var(--text-faint);margin-top:6px;">Ingin upgrade premium? Kirim bukti pembayaran melalui salah satu kontak di atas — owner akan membalas dengan kode aktivasi.</p>'
+    );
+  }
+  document.getElementById('drawerContact').addEventListener('click', showContactModal);
+
+  // ---------- upgrade modal ----------
+  function showUpgradeModal(){
+    var tiersHtml = TIERS.map(function(t){
+      return '<div class="tier-card"><div><b>' + t.builds + ' kali build</b><div class="sub">Kode aktivasi dari co-founder</div></div><div class="price">' + t.price + '</div></div>';
+    }).join('');
+    var modal = openModal(
+      '<div class="modal-title"><h3>Upgrade Premium</h3><button class="close" onclick="window.__closeModal()">✕</button></div>' +
+      tiersHtml +
+      '<h4 style="font-size:12.5px;color:var(--text-faint);margin:14px 0 8px 0;">Metode pembayaran</h4>' +
+      '<div class="pay-row"><span>Dana · <span class="num">083192424078</span></span><button class="copy-btn" data-copy="083192424078">Salin</button></div>' +
+      '<div class="pay-row"><span>GoPay · <span class="num">083192424078</span></span><button class="copy-btn" data-copy="083192424078">Salin</button></div>' +
+      '<p style="font-size:12px;color:var(--text-faint);margin:2px 0 14px 0;">Kirim bukti pembayaran ke WhatsApp 081318777423 atau Telegram t.me/ElfawadzPreneur, lalu owner akan memberikan kode aktivasi sesuai paket.</p>' +
+      '<h4 style="font-size:12.5px;color:var(--text-faint);margin:0 0 8px 0;">Sudah punya kode aktivasi?</h4>' +
+      '<div class="redeem-row"><input type="text" id="redeemInput" placeholder="Masukkan kode aktivasi"><button class="btn-primary" id="redeemBtn">Aktifkan</button></div>' +
+      '<div id="redeemMsg"></div>'
+    );
+    modal.querySelectorAll('.copy-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function(){ toast('Nomor disalin'); });
+      });
+    });
+    modal.querySelector('#redeemBtn').addEventListener('click', async function(){
+      var code = modal.querySelector('#redeemInput').value.trim();
+      var msgEl = modal.querySelector('#redeemMsg');
+      if(!code){ msgEl.innerHTML = '<div class="msg-err">Masukkan kode terlebih dahulu.</div>'; return; }
+      var hash = await sha256Hex(code);
+      var match = TIERS.find(function(t){ return t.hash === hash; });
+      if(match){
+        state.isPremium = true;
+        state.premiumTotal += match.builds;
+        await saveState();
+        updateQuotaBadge();
+        msgEl.innerHTML = '<div class="msg-ok">Kode valid! ' + match.builds + ' build premium ditambahkan.</div>';
+        toast('Premium aktif 🎉');
+      }else{
+        msgEl.innerHTML = '<div class="msg-err">Kode tidak valid.</div>';
+      }
+    });
+  }
+  document.getElementById('drawerUpgrade').addEventListener('click', showUpgradeModal);
+  document.getElementById('quotaUpgradeLink').addEventListener('click', showUpgradeModal);
+
+  // ---------- quota exceeded modal ----------
+  function showQuotaModal(){
+    openModal(
+      '<div class="modal-title"><h3>Kuota habis</h3><button class="close" onclick="window.__closeModal()">✕</button></div>' +
+      '<div class="quota-warn"><span class="em">🔒</span>Kuota build gratis kamu sudah habis. Upgrade ke premium untuk terus membangun APK.</div>' +
+      '<button class="btn-primary btn-block" style="margin-top:14px;" id="goUpgradeBtn">Lihat paket premium</button>'
+    );
+    document.getElementById('goUpgradeBtn').addEventListener('click', function(){ closeModal(); showUpgradeModal(); });
+  }
+
+  // ---------- build flow ----------
+  var BUILD_STEPS = [
+    'Menyiapkan proyek Android...',
+    'Mengambil sumber dari konfigurasi...',
+    'Menyusun WebView & tata letak...',
+    'Menerapkan tema & ikon aplikasi...',
+    'Mengompilasi sumber ke APK...',
+    'Menandatangani paket (signing)...',
+    'Build selesai.'
+  ];
+
+  function getConfig(){
+    var isUrl = document.getElementById('srcUrlBtn').classList.contains('active');
+    return {
+      source: isUrl ? (document.getElementById('siteUrl').value.trim()) : (document.getElementById('localFileName').textContent),
+      sourceType: isUrl ? 'URL' : 'Lokal',
+      appName: document.getElementById('appName').value.trim(),
+      version: document.getElementById('appVersion').value.trim() || '1.0.0',
+      packageName: document.getElementById('packageName').value.trim() || '-',
+      theme: document.getElementById('themeMode').value,
+      uiColor: document.getElementById('uiColor').value.trim()
+    };
+  }
+
+  document.getElementById('buildBtn').addEventListener('click', function(){
+    var cfg = getConfig();
+    if(cfg.sourceType === 'URL' && (!cfg.source || !/^https?:\/\//i.test(cfg.source))){
+      toast('URL harus diawali http:// atau https://'); return;
+    }
+    if(cfg.sourceType === 'Lokal' && (!cfg.source || cfg.source === 'Pilih berkas')){
+      toast('Pilih berkas situs terlebih dahulu'); return;
+    }
+    if(!cfg.appName){ toast('Nama aplikasi wajib diisi'); return; }
+
+    if(remaining() <= 0){ showQuotaModal(); return; }
+    runBuildModal(cfg);
+  });
+
+  function runBuildModal(cfg){
+    var modal = openModal(
+      '<div class="modal-title"><h3>Membangun APK</h3><button class="close" id="btnCloseBuild" style="visibility:hidden;">✕</button></div>' +
+      '<div class="terminal" id="buildTerminal"><div class="cmd">$ letsgo build --app="' + cfg.appName + '"</div></div>' +
+      '<div class="progress-track"><div class="progress-fill" id="buildProgress"></div></div>' +
+      '<div class="progress-label"><span id="progressPct">0%</span><span>' + cfg.sourceType + ' • ' + cfg.appName + '</span></div>' +
+      '<div id="buildResult"></div>'
+    );
+    var term = modal.querySelector('#buildTerminal');
+    var fill = modal.querySelector('#buildProgress');
+    var pct = modal.querySelector('#progressPct');
+    var i = 0;
+    var iv = setInterval(function(){
+      if(i >= BUILD_STEPS.length){
+        clearInterval(iv);
+        finishBuild(modal, cfg);
+        return;
+      }
+      var line = document.createElement('div');
+      line.textContent = '› ' + BUILD_STEPS[i];
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+      i++;
+      var p = Math.round((i/BUILD_STEPS.length)*100);
+      fill.style.width = p + '%';
+      pct.textContent = p + '%';
+    }, 420);
+  }
+
+  async function finishBuild(modal, cfg){
+    if(state.isPremium){ state.premiumUsed++; } else { state.freeUsed++; }
+    var entry = {
+      id: Date.now(),
+      appName: cfg.appName,
+      source: cfg.source,
+      sourceType: cfg.sourceType,
+      version: cfg.version,
+      packageName: cfg.packageName,
+      date: Date.now(),
+      tier: state.isPremium ? 'premium' : 'free'
+    };
+    history.unshift(entry);
+    await saveState();
+    await saveHistory();
+    updateQuotaBadge();
+
+    modal.querySelector('#btnCloseBuild').style.visibility = 'visible';
+    modal.querySelector('#btnCloseBuild').setAttribute('onclick','window.__closeModal()');
+    modal.querySelector('#buildResult').innerHTML =
+      '<div class="summary-row"><span>Aplikasi</span><span>' + cfg.appName + '</span></div>' +
+      '<div class="summary-row"><span>Sumber</span><span>' + cfg.sourceType + '</span></div>' +
+      '<div class="summary-row"><span>Versi</span><span>' + cfg.version + '</span></div>' +
+      '<div class="summary-row"><span>Paket</span><span>' + cfg.packageName + '</span></div>' +
+      '<div class="summary-row"><span>Sisa kuota</span><span>' + Math.max(remaining(),0) + '</span></div>' +
+      '<button class="btn-secondary btn-block" style="margin-top:14px;" id="dlSummaryBtn">⬇️ Unduh ringkasan konfigurasi (.json)</button>' +
+      '<p style="font-size:11.5px;color:var(--text-faint);margin-top:10px;">Catatan: ini adalah ringkasan konfigurasi, bukan berkas APK terkompilasi.</p>';
+    modal.querySelector('#dlSummaryBtn').addEventListener('click', function(){
+      downloadFile(cfg.appName.replace(/\s+/g,'_') + '_config.json', JSON.stringify(entry, null, 2));
+    });
+  }
+
+  window.__closeModal = closeModal;
+
+  // ---------- history page ----------
+  function renderHistory(){
+    var list = document.getElementById('historyList');
+    if(!history.length){
+      list.innerHTML = '<div class="empty-state"><span class="em">🕘</span>Belum ada riwayat build.</div>';
+      return;
+    }
+    list.innerHTML = history.map(function(h){
+      return '<div class="history-item">' +
+        '<div class="top"><b>' + h.appName + '</b><span class="badge ' + (h.tier==='premium'?'premium':'free') + '">' + (h.tier==='premium'?'Premium':'Gratis') + '</span></div>' +
+        '<div class="url">' + h.sourceType + ' • ' + h.source + '</div>' +
+        '<div class="url" style="margin-top:4px;">' + fmtDate(h.date) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+  document.getElementById('clearHistoryBtn').addEventListener('click', async function(){
+    history = [];
+    await saveHistory();
+    renderHistory();
+    toast('Riwayat dihapus');
+  });
+
+  // ---------- theme switch ----------
+  document.getElementById('themeSwitch').addEventListener('click', async function(){
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    await saveState();
+  });
+
+  // ---------- init ----------
+  (async function init(){
+    await loadState();
+    applyTheme();
+    updateQuotaBadge();
+  })();
+
+})();
+</script>
+</body>
+</html>
